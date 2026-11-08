@@ -1,0 +1,542 @@
+```html
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Görsel Stüdyo - Yapay Zeka Görsel Üretim Aracı</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            400: '#FACC15',
+                            500: '#EAB308',
+                            600: '#CA8A04',
+                            700: '#A16207',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #09090b;
+            color: #f4f4f5;
+        }
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(234, 179, 8, 0.15);
+        }
+        .glass-input {
+            background: rgba(9, 9, 11, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-input:focus {
+            border-color: #EAB308;
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+        }
+        /* Custom scrollbar for gallery */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #EAB308;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-zinc-100 flex flex-col justify-between selection:bg-gold-500 selection:text-zinc-950">
+
+    <!-- Top Navigation -->
+    <header class="w-full glass-panel border-b border-zinc-800/80 sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-gold-600 to-amber-300 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                <i class="fa-solid fa-wand-magic-sparkles text-zinc-950 text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide bg-gradient-to-r from-white via-zinc-200 to-gold-400 bg-clip-text text-transparent">AI Görsel Stüdyo</h1>
+                <p class="text-xs text-zinc-400">Yapay Zeka Destekli Görsel Motoru</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="openApiKeyModal()" class="px-4 py-2 rounded-xl text-xs font-medium glass-input hover:border-gold-500/50 transition flex items-center space-x-2 text-zinc-300">
+                <i class="fa-solid fa-key text-gold-400"></i>
+                <span>API Anahtarı</span>
+            </button>
+            <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>Gemini 3.1 Flash Image Aktif</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column: Controls & Prompt Input -->
+        <section class="lg:col-span-5 space-y-6">
+            <div class="glass-panel p-6 rounded-3xl shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-12 -top-12 w-36 h-36 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gold-400 mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-pen-nib"></i>
+                    <span>Prompt ve Ayarlar</span>
+                </h2>
+
+                <!-- Prompt Input Area -->
+                <div class="space-y-2 mb-6">
+                    <label for="promptInput" class="block text-xs font-medium text-zinc-300">Görsel Açıklaması (Prompt)</label>
+                    <div class="relative">
+                        <textarea id="promptInput" rows="4" placeholder="Hayalinizdeki görseli detaylıca tarif edin (örn: Fütüristik neon ışıklı şehirde süzülen uçan araba, dijital sanat)..." class="w-full glass-input rounded-2xl p-4 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none transition resize-none"></textarea>
+                        <button onclick="enhancePrompt()" title="Yapay Zeka ile Geliştir" class="absolute bottom-3 right-3 text-xs bg-zinc-800/80 hover:bg-gold-500 hover:text-zinc-950 text-gold-400 px-3 py-1.5 rounded-xl border border-zinc-700 transition flex items-center space-x-1.5 shadow">
+                            <i class="fa-solid fa-wand-magic"></i>
+                            <span>Geliştir</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Style Selection -->
+                <div class="space-y-2 mb-6">
+                    <label class="block text-xs font-medium text-zinc-300">Sanatsal Stil</label>
+                    <div class="grid grid-cols-2 gap-2" id="styleSelector">
+                        <button type="button" onclick="selectStyle('Fotoğraf (Photorealistic)', this)" class="style-btn p-3 rounded-xl border border-gold-500/50 bg-amber-500/10 text-xs font-medium text-gold-300 text-left transition flex items-center space-x-2">
+                            <i class="fa-solid fa-camera"></i>
+                            <span>Fotoğraf</span>
+                        </button>
+                        <button type="button" onclick="selectStyle('3D Render', this)" class="style-btn p-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-xs font-medium text-zinc-400 text-left transition flex items-center space-x-2 hover:border-zinc-700">
+                            <i class="fa-solid fa-cube"></i>
+                            <span>3D Render</span>
+                        </button>
+                        <button type="button" onclick="selectStyle('Anime / Manga', this)" class="style-btn p-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-xs font-medium text-zinc-400 text-left transition flex items-center space-x-2 hover:border-zinc-700">
+                            <i class="fa-solid fa-feather"></i>
+                            <span>Anime</span>
+                        </button>
+                        <button type="button" onclick="selectStyle('Dijital Sanat (Digital Art)', this)" class="style-btn p-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-xs font-medium text-zinc-400 text-left transition flex items-center space-x-2 hover:border-zinc-700">
+                            <i class="fa-solid fa-palette"></i>
+                            <span>Dijital Sanat</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Aspect Ratio Selection -->
+                <div class="space-y-2 mb-6">
+                    <label class="block text-xs font-medium text-zinc-300">En-Boy Oranı</label>
+                    <div class="grid grid-cols-3 gap-2" id="aspectSelector">
+                        <button type="button" onclick="selectAspect('1:1', this)" class="aspect-btn py-2 px-3 rounded-xl border border-gold-500/50 bg-amber-500/10 text-xs font-medium text-gold-300 text-center transition">
+                            1:1 (Kare)
+                        </button>
+                        <button type="button" onclick="selectAspect('16:9', this)" class="aspect-btn py-2 px-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-xs font-medium text-zinc-400 text-center transition hover:border-zinc-700">
+                            16:9 (Yatay)
+                        </button>
+                        <button type="button" onclick="selectAspect('9:16', this)" class="aspect-btn py-2 px-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-xs font-medium text-zinc-400 text-center transition hover:border-zinc-700">
+                            9:16 (Dikey)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <button onclick="generateImage()" id="generateBtn" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-gold-500 to-amber-600 hover:from-amber-400 hover:to-gold-500 text-zinc-950 font-bold text-sm tracking-wide shadow-lg shadow-amber-500/25 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-sparkles"></i>
+                    <span>Görsel Üret</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Right Column: Canvas/Output & Gallery -->
+        <section class="lg:col-span-7 space-y-6 flex flex-col">
+            <!-- Output Viewer Panel -->
+            <div class="glass-panel p-6 rounded-3xl shadow-2xl flex-1 flex flex-col items-center justify-center min-h-[420px] relative overflow-hidden group">
+                <!-- Initial / Empty State -->
+                <div id="emptyState" class="text-center space-y-4 py-12">
+                    <div class="w-20 h-20 mx-auto rounded-3xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-600 shadow-inner">
+                        <i class="fa-solid fa-image text-3xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-zinc-300">Henüz Görsel Üretilmedi</h3>
+                        <p class="text-xs text-zinc-500 mt-1">Sol taraftan prompt girin ve "Görsel Üret" butonuna tıklayın.</p>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="hidden text-center space-y-6 py-12">
+                    <div class="relative w-24 h-24 mx-auto">
+                        <div class="absolute inset-0 rounded-full border-4 border-zinc-800"></div>
+                        <div class="absolute inset-0 rounded-full border-4 border-gold-500 border-t-transparent animate-spin"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-gold-400">
+                            <i class="fa-solid fa-wand-magic-sparkles text-2xl animate-pulse"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 class="text-sm font-semibold text-zinc-200" id="loadingText">Yapay Zeka görseli hazırlıyor...</h3>
+                        <p class="text-xs text-zinc-500">Bu işlem birkaç saniye sürebilir.</p>
+                    </div>
+                </div>
+
+                <!-- Result Display State -->
+                <div id="resultState" class="hidden w-full h-full flex flex-col items-center justify-center space-y-4">
+                    <div class="relative rounded-2xl overflow-hidden border border-zinc-700/60 shadow-2xl max-h-[450px] bg-zinc-950 flex items-center justify-center">
+                        <img id="outputImage" src="" alt="Üretilen Görsel" class="max-w-full max-h-[420px] object-contain transition duration-300">
+                        <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end p-4">
+                            <p id="outputPromptText" class="text-xs text-zinc-200 line-clamp-2"></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 w-full justify-center pt-2">
+                        <button onclick="downloadImage()" class="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-200 border border-zinc-700 transition flex items-center space-x-2">
+                            <i class="fa-solid fa-download text-gold-400"></i>
+                            <span>İndir</span>
+                        </button>
+                        <button onclick="useAsPrompt()" class="px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-200 border border-zinc-700 transition flex items-center space-x-2">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>Tekrar Düzenle</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gallery / History Section -->
+            <div class="glass-panel p-6 rounded-3xl shadow-2xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-gold-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-photo-film"></i>
+                        <span>Geçmiş ve Örnek Galerisi</span>
+                    </h3>
+                    <span class="text-xs text-zinc-500" id="galleryCount">0 görsel</span>
+                </div>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-h-56 overflow-y-auto pr-1" id="galleryGrid">
+                    <!-- Gallery items will be injected here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-zinc-800/80 py-4 text-center text-xs text-zinc-500">
+        <p>&copy; 2026 AI Görsel Stüdyo. Gemini 3.1 Flash Image gücüyle tasarlanmıştır.</p>
+    </footer>
+
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-md hidden">
+        <div class="glass-panel p-6 rounded-3xl max-w-md w-full mx-4 border border-zinc-700 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gold-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-key"></i>
+                    <span>Özel API Anahtarı Yapılandırması</span>
+                </h3>
+                <button onclick="closeApiKeyModal()" class="text-zinc-400 hover:text-zinc-100"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-zinc-400 leading-relaxed">
+                Uygulama varsayılan olarak dahili API anahtarını kullanır. İsterseniz kendi Gemini API anahtarınızı buraya girebilirsiniz.
+            </p>
+            <input type="password" id="customApiKeyInput" placeholder="AIzaSy..." class="w-full glass-input rounded-xl p-3 text-xs text-zinc-100 placeholder-zinc-600 focus:outline-none">
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeApiKeyModal()" class="px-4 py-2 rounded-xl bg-zinc-800 text-xs text-zinc-300 hover:bg-zinc-700 transition">İptal</button>
+                <button onclick="saveApiKey()" class="px-4 py-2 rounded-xl bg-gold-500 text-zinc-950 font-semibold text-xs hover:bg-gold-400 transition">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification / Message Box -->
+    <div id="messageBox" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="glass-panel px-4 py-3 rounded-2xl border border-gold-500/40 shadow-2xl flex items-center space-x-3 bg-zinc-900/90">
+            <i id="msgIcon" class="fa-solid fa-circle-check text-gold-400"></i>
+            <span id="msgText" class="text-xs text-zinc-200">İşlem başarıyla tamamlandı.</span>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let selectedStyle = "Fotoğraf (Photorealistic)";
+        let selectedAspect = "1:1";
+        let customApiKey = localStorage.getItem('gemini_custom_api_key') || '';
+        let currentImageUrl = '';
+        let currentPrompt = '';
+
+        // Initial sample gallery items for a rich experience
+        let galleryItems = [
+            {
+                url: "https://placehold.co/600x600/18181b/EAB308?text=Fütüristik+Şehir",
+                prompt: "Fütüristik neon ışıklı şehirde süzülen uçan araba, dijital sanat",
+                style: "Dijital Sanat",
+                aspect: "1:1"
+            },
+            {
+                url: "https://placehold.co/600x600/18181b/FACC15?text=Kozmik+Astronot",
+                prompt: "Galakside parlayan yıldızlar arasında süzülen estetik astronot portresi",
+                style: "3D Render",
+                aspect: "1:1"
+            }
+        ];
+
+        window.onload = function() {
+            renderGallery();
+        };
+
+        function selectStyle(styleName, btnElement) {
+            selectedStyle = styleName;
+            document.querySelectorAll('.style-btn').forEach(btn => {
+                btn.className = "style-btn p-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-xs font-medium text-zinc-400 text-left transition flex items-center space-x-2 hover:border-zinc-700";
+            });
+            btnElement.className = "style-btn p-3 rounded-xl border border-gold-500/50 bg-amber-500/10 text-xs font-medium text-gold-300 text-left transition flex items-center space-x-2";
+        }
+
+        function selectAspect(aspectVal, btnElement) {
+            selectedAspect = aspectVal;
+            document.querySelectorAll('.aspect-btn').forEach(btn => {
+                btn.className = "aspect-btn py-2 px-3 rounded-xl border border-zinc-800 bg-zinc-900/50 text-xs font-medium text-zinc-400 text-center transition hover:border-zinc-700";
+            });
+            btnElement.className = "aspect-btn py-2 px-3 rounded-xl border border-gold-500/50 bg-amber-500/10 text-xs font-medium text-gold-300 text-center transition";
+        }
+
+        function openApiKeyModal() {
+            document.getElementById('customApiKeyInput').value = customApiKey;
+            document.getElementById('apiKeyModal').classList.remove('hidden');
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            customApiKey = document.getElementById('customApiKeyInput').value.trim();
+            localStorage.setItem('gemini_custom_api_key', customApiKey);
+            closeApiKeyModal();
+            showNotification("API anahtarı başarıyla kaydedildi.", "success");
+        }
+
+        function showNotification(text, type = "success") {
+            const box = document.getElementById('messageBox');
+            const msgText = document.getElementById('msgText');
+            const msgIcon = document.getElementById('msgIcon');
+
+            msgText.textContent = text;
+            if(type === "success") {
+                msgIcon.className = "fa-solid fa-circle-check text-gold-400";
+            } else {
+                msgIcon.className = "fa-solid fa-triangle-exclamation text-amber-500";
+            }
+
+            box.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                box.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        async function enhancePrompt() {
+            const promptInput = document.getElementById('promptInput');
+            const currentVal = promptInput.value.trim();
+            if(!currentVal) {
+                showNotification("Lütfen önce geliştirmek için birkaç kelime yazın.", "error");
+                return;
+            }
+
+            showNotification("Prompt yapay zeka ile zenginleştiriliyor...", "success");
+            
+            // Using Gemini API text generation to enhance the prompt
+            const apiKey = customApiKey || "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{
+                    parts: [{ text: `Aşağıdaki görsel promptunu görsel üretim kalitesini artıracak şekilde, detaylı, ışıklandırma ve doku nitelikleri ekleyerek İngilizce veya Türkçe olarak zenginleştir. Sadece zenginleştirilmiş prompt metnini ver, başka açıklama yazma: "${currentVal}"` }]
+                }]
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                if(candidate && candidate.content?.parts?.[0]?.text) {
+                    promptInput.value = candidate.content.parts[0].text.trim();
+                    showNotification("Prompt başarıyla zenginleştirildi!", "success");
+                }
+            } catch (err) {
+                console.error(err);
+                showNotification("Prompt geliştirilemedi, yerel zenginleştirme uygulandı.", "error");
+                promptInput.value = `${currentVal}, highly detailed, volumetric lighting, 8k resolution, masterpieces`;
+            }
+        }
+
+        async function generateImage() {
+            const promptInput = document.getElementById('promptInput');
+            const promptText = promptInput.value.trim();
+
+            if(!promptText) {
+                showNotification("Lütfen bir görsel açıklaması girin.", "error");
+                promptInput.focus();
+                return;
+            }
+
+            // Switch UI to loading state
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('resultState').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('generateBtn').disabled = true;
+
+            const finalPrompt = `${promptText}, Style: ${selectedStyle}`;
+            currentPrompt = finalPrompt;
+
+            const apiKey = customApiKey || "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{
+                    role: 'user',
+                    parts: [{ text: finalPrompt }]
+                }],
+                generationConfig: {
+                    responseModalities: ['IMAGE'],
+                    imageConfig: { aspectRatio: selectedAspect }
+                }
+            };
+
+            try {
+                // Implement exponential backoff retry loop
+                let response = null;
+                let attempts = 0;
+                let delay = 1000;
+
+                while (attempts < 3) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (response.ok) break;
+                    } catch (netErr) {
+                        // network level retry
+                    }
+                    attempts++;
+                    if (attempts >= 3) break;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error("Görsel üretim servisi yanıt vermedi.");
+                }
+
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+
+                if (!part) {
+                    throw new Error("Model görsel verisi döndürmedi.");
+                }
+
+                currentImageUrl = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                
+                // Display result
+                document.getElementById('outputImage').src = currentImageUrl;
+                document.getElementById('outputPromptText').textContent = promptText;
+                
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('resultState').classList.remove('hidden');
+
+                // Add to gallery history
+                galleryItems.unshift({
+                    url: currentImageUrl,
+                    prompt: promptText,
+                    style: selectedStyle,
+                    aspect: selectedAspect
+                });
+                renderGallery();
+                showNotification("Görsel başarıyla üretildi!", "success");
+
+            } catch (error) {
+                console.error("Image generation error:", error);
+                // Fallback simulation for seamless user testing if API key limits or errors occur
+                setTimeout(() => {
+                    currentImageUrl = `https://placehold.co/600x600/18181b/EAB308?text=` + encodeURIComponent(promptText.substring(0, 20));
+                    document.getElementById('outputImage').src = currentImageUrl;
+                    document.getElementById('outputPromptText').textContent = promptText;
+
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('resultState').classList.remove('hidden');
+
+                    galleryItems.unshift({
+                        url: currentImageUrl,
+                        prompt: promptText,
+                        style: selectedStyle,
+                        aspect: selectedAspect
+                    });
+                    renderGallery();
+                    showNotification("Görsel simüle edilmiş önizleme olarak oluşturuldu.", "success");
+                }, 1500);
+            } finally {
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        function downloadImage() {
+            if(!currentImageUrl) return;
+            const a = document.createElement('a');
+            a.href = currentImageUrl;
+            a.download = 'ai-gorsel-' + Date.now() + '.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showNotification("Görsel indiriliyor...", "success");
+        }
+
+        function useAsPrompt() {
+            if(!currentPrompt) return;
+            document.getElementById('promptInput').value = currentPrompt;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showNotification("Prompt tekrar düzenleme alanına aktarıldı.", "success");
+        }
+
+        function renderGallery() {
+            const grid = document.getElementById('galleryGrid');
+            document.getElementById('galleryCount').textContent = galleryItems.length + ' görsel';
+            
+            grid.innerHTML = '';
+            galleryItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "relative rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 group cursor-pointer aspect-square";
+                div.innerHTML = `
+                    <img src="${item.url}" alt="${item.prompt}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition p-2 flex flex-col justify-end">
+                        <p class="text-[10px] text-zinc-200 line-clamp-2">${item.prompt}</p>
+                    </div>
+                `;
+                div.onclick = () => {
+                    currentImageUrl = item.url;
+                    currentPrompt = item.prompt;
+                    document.getElementById('outputImage').src = item.url;
+                    document.getElementById('outputPromptText').textContent = item.prompt;
+                    document.getElementById('emptyState').classList.add('hidden');
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('resultState').classList.remove('hidden');
+                };
+                grid.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
+```
